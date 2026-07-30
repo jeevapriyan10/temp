@@ -3,19 +3,33 @@ import Topbar from '../../components/Topbar';
 import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
+import Avatar from '../../components/Avatar';
 import useOrgStore from '../../store/orgStore';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { UserPlus } from 'lucide-react';
 
 const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
+  { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
+  {
+    key: 'name',
+    label: 'User Name',
+    render: (val, row) => (
+      <div className="flex items-center gap-2.5">
+        <Avatar name={val || 'User'} size="sm" />
+        <div>
+          <p className="font-bold text-slate-900 leading-none">{val}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">{row.phone || 'No phone'}</p>
+        </div>
+      </div>
+    ),
+  },
+  { key: 'email', label: 'Email Address', render: (val) => <span className="text-slate-600 font-medium">{val}</span> },
   {
     key: 'role',
     label: 'Role',
     render: (val) => (
-      <span className="px-2 py-1 rounded-md text-xs font-medium bg-civic-500/10 text-civic-400">
+      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 capitalize">
         {val?.name?.replace('_', ' ') || '—'}
       </span>
     ),
@@ -24,7 +38,7 @@ const columns = [
     key: 'is_active',
     label: 'Status',
     render: (val) => (
-      <span className={`px-2 py-1 rounded-md text-xs font-medium ${val ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${val ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
         {val ? 'Active' : 'Inactive'}
       </span>
     ),
@@ -76,31 +90,33 @@ export default function UsersPage() {
 
   return (
     <>
-      <Topbar title="Users" subtitle="Manage user accounts and roles">
-        <Button onClick={() => setModalOpen(true)}>+ Add User</Button>
+      <Topbar title="Users" subtitle="Manage organization staff, field officers, and citizens">
+        <Button onClick={() => setModalOpen(true)}>
+          <UserPlus className="w-4 h-4" /> Add User
+        </Button>
       </Topbar>
 
-      <div className="p-8">
+      <div className="p-6">
         <DataTable columns={columns} data={users} />
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add User">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add User Account">
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
           <div>
-            <label className="label-text">Name *</label>
-            <input className="input-field" value={form.name} onChange={updateField('name')} required />
+            <label className="label-text">Full Name *</label>
+            <input className="input-field" value={form.name} onChange={updateField('name')} required placeholder="e.g. Officer Jane Smith" />
           </div>
           <div>
-            <label className="label-text">Email *</label>
-            <input type="email" className="input-field" value={form.email} onChange={updateField('email')} required />
+            <label className="label-text">Email Address *</label>
+            <input type="email" className="input-field" value={form.email} onChange={updateField('email')} required placeholder="officer@city.gov" />
           </div>
           <div>
             <label className="label-text">Password *</label>
-            <input type="password" className="input-field" value={form.password} onChange={updateField('password')} required />
+            <input type="password" className="input-field" value={form.password} onChange={updateField('password')} required placeholder="••••••••" />
           </div>
           <div>
-            <label className="label-text">Phone</label>
-            <input className="input-field" value={form.phone} onChange={updateField('phone')} />
+            <label className="label-text">Phone Number</label>
+            <input className="input-field" value={form.phone} onChange={updateField('phone')} placeholder="+1 (555) 000-0000" />
           </div>
           <div>
             <label className="label-text">Role *</label>
@@ -112,7 +128,7 @@ export default function UsersPage() {
             </select>
           </div>
           <div>
-            <label className="label-text">Department</label>
+            <label className="label-text">Department (Optional)</label>
             <select className="select-field" value={form.department_id} onChange={updateField('department_id')}>
               <option value="">No department</option>
               {departments.map((d) => (

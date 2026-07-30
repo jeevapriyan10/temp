@@ -6,20 +6,30 @@ import Button from '../../components/Button';
 import useOrgStore from '../../store/orgStore';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { MapPin, Plus } from 'lucide-react';
 
 const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
+  { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
+  {
+    key: 'name',
+    label: 'Location Name',
+    render: (val) => (
+      <div className="flex items-center gap-2 font-bold text-slate-900">
+        <MapPin className="w-4 h-4 text-blue-600" />
+        <span>{val}</span>
+      </div>
+    ),
+  },
   {
     key: 'type',
     label: 'Type',
     render: (val) => (
-      <span className="px-2 py-1 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 capitalize">
+      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 capitalize">
         {val}
       </span>
     ),
   },
-  { key: 'parent_location_id', label: 'Parent ID', render: (v) => v || '—' },
+  { key: 'parent_location_id', label: 'Parent ID', render: (v) => (v ? <span className="font-mono text-xs text-slate-500">#{v}</span> : '—') },
 ];
 
 export default function LocationsPage() {
@@ -57,19 +67,21 @@ export default function LocationsPage() {
 
   return (
     <>
-      <Topbar title="Locations" subtitle="Manage location hierarchy">
-        <Button onClick={() => setModalOpen(true)}>+ Add Location</Button>
+      <Topbar title="Locations" subtitle="Manage geographic boundaries and location hierarchy">
+        <Button onClick={() => setModalOpen(true)}>
+          <Plus className="w-4 h-4" /> Add Location
+        </Button>
       </Topbar>
 
-      <div className="p-8">
+      <div className="p-6">
         <DataTable columns={columns} data={locations} />
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add Location">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add Location Node">
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
           <div>
-            <label className="label-text">Name *</label>
-            <input className="input-field" value={form.name} onChange={updateField('name')} required />
+            <label className="label-text">Location Name *</label>
+            <input className="input-field" value={form.name} onChange={updateField('name')} required placeholder="e.g. Ward 5 Anna Street" />
           </div>
           <div>
             <label className="label-text">Type</label>

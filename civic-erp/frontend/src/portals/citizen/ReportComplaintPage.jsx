@@ -4,6 +4,7 @@ import Topbar from '../../components/Topbar';
 import Button from '../../components/Button';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { Send, Upload, X } from 'lucide-react';
 
 export default function ReportComplaintPage() {
   const { user } = useAuthStore();
@@ -68,16 +69,16 @@ export default function ReportComplaintPage() {
 
   return (
     <>
-      <Topbar title="Report Civic Issue" subtitle="File a new complaint or service request" />
+      <Topbar title="Report Civic Issue" subtitle="File a new complaint or service request with your local government" />
 
-      <div className="p-8 max-w-3xl mx-auto">
-        <form onSubmit={handleSubmit} className="glass-card p-8 space-y-6 animate-fadeIn">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="p-6 max-w-3xl mx-auto">
+        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-6 space-y-5 shadow-xs animate-fadeIn text-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Department Dropdown */}
             <div>
               <label className="label-text">1. Department *</label>
               <select
-                className="input-field"
+                className="select-field"
                 value={selectedDept}
                 onChange={(e) => {
                   setSelectedDept(e.target.value);
@@ -88,7 +89,7 @@ export default function ReportComplaintPage() {
                 <option value="">-- Select Department --</option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.icon} {d.name}
+                    {d.name}
                   </option>
                 ))}
               </select>
@@ -98,7 +99,7 @@ export default function ReportComplaintPage() {
             <div>
               <label className="label-text">2. Service Category *</label>
               <select
-                className="input-field"
+                className="select-field"
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
                 disabled={!selectedDept}
@@ -114,19 +115,19 @@ export default function ReportComplaintPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Location Dropdown */}
             <div>
               <label className="label-text">3. Location / Area</label>
               <select
-                className="input-field"
+                className="select-field"
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
               >
                 <option value="">-- Select Location --</option>
                 {locations.map((loc) => (
                   <option key={loc.id} value={loc.id}>
-                    📍 {loc.name} ({loc.type})
+                    {loc.name} ({loc.type})
                   </option>
                 ))}
               </select>
@@ -136,7 +137,7 @@ export default function ReportComplaintPage() {
             <div>
               <label className="label-text">4. Urgency Level</label>
               <select
-                className="input-field"
+                className="select-field"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
               >
@@ -167,28 +168,29 @@ export default function ReportComplaintPage() {
               type="file"
               accept="image/*"
               onChange={handlePhotoUpload}
-              className="input-field text-surface-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-civic-500/20 file:text-civic-400 hover:file:bg-civic-500/30 cursor-pointer"
+              className="input-field text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
             {photoBase64 && (
-              <div className="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-surface-600">
+              <div className="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-slate-200 shadow-2xs">
                 <img src={photoBase64} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => setPhotoBase64('')}
-                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  className="absolute top-1 right-1 bg-slate-900/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                 >
-                  ✕
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             )}
           </div>
 
           {/* Submit */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-surface-700/50">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <Button variant="secondary" type="button" onClick={() => navigate('/citizen')}>
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
+              <Send className="w-3.5 h-3.5" />
               {submitting ? 'Submitting...' : 'Submit Complaint'}
             </Button>
           </div>

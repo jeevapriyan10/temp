@@ -5,8 +5,11 @@ import PriorityBadge from '../../components/PriorityBadge';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import DataTable from '../../components/DataTable';
+import KanbanBoard from '../../components/KanbanBoard';
+import Avatar from '../../components/Avatar';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { Kanban, List, UserCheck } from 'lucide-react';
 
 export default function DepartmentDashboard() {
   const { user } = useAuthStore();
@@ -14,6 +17,7 @@ export default function DepartmentDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [officers, setOfficers] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [viewMode, setViewMode] = useState('kanban');
 
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -71,13 +75,40 @@ export default function DepartmentDashboard() {
     }
   };
 
+  const openAssignModal = (complaint) => {
+    setSelectedComplaint(complaint);
+    setSelectedOfficerId(complaint.assigned_officer_id || '');
+    setAssignModalOpen(true);
+  };
+
   const columns = [
-    { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-civic-400">#{val}</span> },
-    { key: 'service', label: 'Service', render: (val) => <span className="font-semibold text-white">{val?.name}</span> },
+    { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
+    { key: 'service', label: 'Service', render: (val) => <span className="font-semibold text-slate-900">{val?.name}</span> },
     { key: 'priority', label: 'Priority', render: (val) => <PriorityBadge priority={val} /> },
     { key: 'status', label: 'Status', render: (val) => <StatusBadge status={val} /> },
-    { key: 'citizen', label: 'Citizen', render: (val) => <span className="text-surface-300">{val?.name}</span> },
-    { key: 'officer', label: 'Assigned Officer', render: (val) => val ? <span className="text-emerald-400 font-medium">{val.name}</span> : <span className="text-surface-500 italic">Unassigned</span> },
+    {
+      key: 'citizen',
+      label: 'Citizen',
+      render: (val) => (
+        <div className="flex items-center gap-2">
+          <Avatar name={val?.name || 'Citizen'} size="xs" />
+          <span className="text-slate-700 font-medium">{val?.name}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'officer',
+      label: 'Assigned Officer',
+      render: (val) =>
+        val ? (
+          <div className="flex items-center gap-2">
+            <Avatar name={val.name} size="xs" />
+            <span className="text-slate-800 font-semibold">{val.name}</span>
+          </div>
+        ) : (
+          <span className="text-slate-400 italic">Unassigned</span>
+        ),
+    },
     { key: 'created_at', label: 'Reported Date', render: (val) => new Date(val).toLocaleDateString() },
     {
       key: 'actions',
@@ -86,12 +117,10 @@ export default function DepartmentDashboard() {
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            setSelectedComplaint(row);
-            setSelectedOfficerId(row.assigned_officer_id || '');
-            setAssignModalOpen(true);
+            openAssignModal(row);
           }}
           variant="secondary"
-          className="text-xs py-1 px-3"
+          className="text-xs py-1 px-2.5"
         >
           {row.assigned_officer_id ? 'Reassign' : 'Assign Officer'}
         </Button>
@@ -106,48 +135,76 @@ export default function DepartmentDashboard() {
         subtitle="Live department complaint management & officer assignment"
       />
 
-      <div className="p-8 space-y-8">
-        {/* Live Complaint Status Stats */}
+      <div className="p-6 space-y-6">
+        {/* KPI Stage Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <div className="glass-card p-4 text-center border-l-2 border-blue-500">
-            <p className="text-xs text-surface-400 font-medium">Reported</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.reported || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-blue-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Reported</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.reported || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-purple-500">
-            <p className="text-xs text-surface-400 font-medium">Verified</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.verified || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-indigo-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Verified</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.verified || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-amber-500">
-            <p className="text-xs text-surface-400 font-medium">Assigned</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.assigned || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-purple-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Assigned</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.assigned || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-orange-500">
-            <p className="text-xs text-surface-400 font-medium">In Progress</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.in_progress || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-amber-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">In Progress</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.in_progress || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-emerald-500">
-            <p className="text-xs text-surface-400 font-medium">Completed</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.completed || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-emerald-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Completed</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.completed || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-teal-500">
-            <p className="text-xs text-surface-400 font-medium">Citizen Ver.</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.citizen_verified || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-teal-500 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Citizen Ver.</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.citizen_verified || 0}</p>
           </div>
-          <div className="glass-card p-4 text-center border-l-2 border-surface-600">
-            <p className="text-xs text-surface-400 font-medium">Closed</p>
-            <p className="text-xl font-bold text-white mt-1">{analytics?.status_counts?.closed || 0}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-3.5 text-center border-t-4 border-t-slate-400 shadow-2xs">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Closed</p>
+            <p className="text-xl font-bold text-slate-900 mt-0.5">{analytics?.status_counts?.closed || 0}</p>
           </div>
         </div>
 
-        {/* My Department Complaints Table */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Department Complaints Queue</h2>
-            <span className="text-xs text-surface-400">Total: {complaints.length} issues</span>
+        {/* Header & View Switcher */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 tracking-tight">Department Queue</h2>
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                viewMode === 'kanban'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Kanban className="w-3.5 h-3.5" /> Kanban
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" /> List
+            </button>
           </div>
+        </div>
 
+        {/* Board or Table View */}
+        {viewMode === 'kanban' ? (
+          <KanbanBoard
+            complaints={complaints}
+            onSelectComplaint={(c) => openAssignModal(c)}
+            onAssignOfficer={(c) => openAssignModal(c)}
+          />
+        ) : (
           <DataTable columns={columns} data={complaints} />
-        </div>
+        )}
       </div>
 
       {/* Assign Officer Modal */}
@@ -157,17 +214,17 @@ export default function DepartmentDashboard() {
         title={`Assign Officer — Complaint #${selectedComplaint?.id}`}
       >
         {selectedComplaint && (
-          <form onSubmit={handleAssignSubmit} className="space-y-4">
-            <div className="bg-surface-900/60 p-3 rounded-xl space-y-1 text-xs">
-              <p><strong className="text-white">Service:</strong> {selectedComplaint.service?.name}</p>
-              <p><strong className="text-white">Description:</strong> {selectedComplaint.description}</p>
-              <p><strong className="text-white">Location:</strong> {selectedComplaint.location?.name}</p>
+          <form onSubmit={handleAssignSubmit} className="space-y-4 text-slate-800">
+            <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1.5 text-xs">
+              <p><strong className="text-slate-900">Service:</strong> {selectedComplaint.service?.name}</p>
+              <p><strong className="text-slate-900">Description:</strong> {selectedComplaint.description}</p>
+              <p><strong className="text-slate-900">Location:</strong> {selectedComplaint.location?.name}</p>
             </div>
 
             <div>
               <label className="label-text">Select Field Officer *</label>
               <select
-                className="input-field"
+                className="select-field"
                 value={selectedOfficerId}
                 onChange={(e) => setSelectedOfficerId(e.target.value)}
                 required
@@ -175,22 +232,23 @@ export default function DepartmentDashboard() {
                 <option value="">-- Select Officer --</option>
                 {officers.map((off) => (
                   <option key={off.id} value={off.id}>
-                    👤 {off.name} ({off.role?.name?.replace('_', ' ')})
+                    {off.name} ({off.role?.name?.replace('_', ' ')})
                   </option>
                 ))}
               </select>
               {officers.length === 0 && (
-                <p className="text-xs text-amber-400 mt-1">
+                <p className="text-xs text-amber-600 mt-1">
                   No officer accounts assigned to this department yet.
                 </p>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-surface-700/50">
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
               <Button variant="secondary" type="button" onClick={() => setAssignModalOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={submittingAssign || !selectedOfficerId}>
+                <UserCheck className="w-4 h-4" />
                 {submittingAssign ? 'Assigning...' : 'Assign & Notify Officer'}
               </Button>
             </div>

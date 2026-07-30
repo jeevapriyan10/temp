@@ -5,16 +5,18 @@ import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import useOrgStore from '../../store/orgStore';
 import api from '../../lib/api';
+import { Shield, Plus } from 'lucide-react';
 
 const columns = [
-  { key: 'id', label: 'ID' },
+  { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
   {
     key: 'name',
     label: 'Role Name',
     render: (val) => (
-      <span className="font-semibold text-white capitalize">
-        {val?.replace('_', ' ')}
-      </span>
+      <div className="flex items-center gap-2 font-bold text-slate-900 capitalize">
+        <Shield className="w-4 h-4 text-blue-600" />
+        <span>{val?.replace('_', ' ')}</span>
+      </div>
     ),
   },
   {
@@ -26,13 +28,13 @@ const columns = [
           val.map((p, idx) => (
             <span
               key={idx}
-              className="px-2 py-0.5 rounded text-xs bg-surface-700 text-surface-300 font-mono"
+              className="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-700 font-mono border border-slate-200"
             >
               {p}
             </span>
           ))
         ) : (
-          <span className="text-surface-500 text-xs">None</span>
+          <span className="text-slate-400 text-xs">None</span>
         )}
       </div>
     ),
@@ -74,18 +76,20 @@ export default function RolesPage() {
 
   return (
     <>
-      <Topbar title="Roles" subtitle="Manage system roles and permissions">
-        <Button onClick={() => setModalOpen(true)}>+ Add Role</Button>
+      <Topbar title="Roles & Access Control" subtitle="Manage system roles and capability permissions">
+        <Button onClick={() => setModalOpen(true)}>
+          <Plus className="w-4 h-4" /> Add Role
+        </Button>
       </Topbar>
 
-      <div className="p-8">
+      <div className="p-6">
         <DataTable columns={columns} data={roles} />
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add Role">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add Custom Role">
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
           <div>
-            <label className="label-text">Role Name *</label>
+            <label className="label-text">Role Identifier *</label>
             <input
               className="input-field"
               value={form.name}
@@ -102,7 +106,7 @@ export default function RolesPage() {
               onChange={updateField('permissionsStr')}
               placeholder="e.g. org:read, dept:read, user:read"
             />
-            <p className="text-xs text-surface-500 mt-1">
+            <p className="text-[11px] text-slate-500 mt-1">
               Separate permission codes with commas. Use * for full access.
             </p>
           </div>

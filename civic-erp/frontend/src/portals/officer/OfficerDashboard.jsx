@@ -4,8 +4,10 @@ import StatusBadge from '../../components/StatusBadge';
 import PriorityBadge from '../../components/PriorityBadge';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
+import Avatar from '../../components/Avatar';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { Zap, Check, MapPin, CheckCircle2, Clock } from 'lucide-react';
 
 export default function OfficerDashboard() {
   const { user } = useAuthStore();
@@ -57,81 +59,89 @@ export default function OfficerDashboard() {
 
   return (
     <>
-      <Topbar title="Officer Dashboard" subtitle={`Welcome, Officer ${user?.name}`} />
+      <Topbar title="Officer Operations" subtitle={`Field Task Console — ${user?.name || 'Officer'}`} />
 
-      <div className="p-8 space-y-8">
-        {/* Header Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="glass-card p-5 border-l-4 border-amber-500">
-            <p className="text-xs text-surface-400 font-medium uppercase">Pending Assigned</p>
-            <p className="text-2xl font-bold text-white mt-1">
+      <div className="p-6 space-y-6">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs border-l-4 border-l-amber-500">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending Assigned</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">
               {tasks.filter((t) => t.status === 'assigned').length}
             </p>
           </div>
-          <div className="glass-card p-5 border-l-4 border-orange-500">
-            <p className="text-xs text-surface-400 font-medium uppercase">Work In Progress</p>
-            <p className="text-2xl font-bold text-white mt-1">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs border-l-4 border-l-orange-500">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Work In Progress</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">
               {tasks.filter((t) => t.status === 'in_progress').length}
             </p>
           </div>
-          <div className="glass-card p-5 border-l-4 border-emerald-500">
-            <p className="text-xs text-surface-400 font-medium uppercase">Resolved Today</p>
-            <p className="text-2xl font-bold text-white mt-1">{completedTasks.length}</p>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs border-l-4 border-l-emerald-500">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Resolved Tasks</p>
+            <p className="text-2xl font-bold text-slate-900 mt-1">{completedTasks.length}</p>
           </div>
         </div>
 
         {/* Today's Active Tasks */}
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">Today's Assigned Tasks</h2>
+          <h2 className="text-base font-bold text-slate-900 tracking-tight mb-4">Assigned Field Tasks</h2>
 
           {activeTasks.length === 0 ? (
-            <div className="glass-card p-12 text-center animate-fadeIn">
-              <div className="text-4xl mb-3">🎉</div>
-              <h3 className="text-lg font-semibold text-white mb-1">No active tasks pending</h3>
-              <p className="text-surface-400 text-sm">
-                You have completed all assigned tasks or none are currently assigned.
+            <div className="bg-white border border-slate-200 rounded-xl p-12 text-center animate-fadeIn shadow-xs">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 mb-1">No active tasks pending</h3>
+              <p className="text-slate-500 text-xs">
+                You have completed all assigned field tasks or none are currently queued.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeTasks.map((t) => (
-                <div key={t.id} className="glass-card p-6 flex flex-col justify-between space-y-4 animate-fadeIn">
-                  <div className="space-y-2">
+                <div key={t.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-4 animate-fadeIn hover:border-slate-300 transition-all">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-civic-400">#{t.id}</span>
+                      <span className="text-xs font-mono font-bold text-blue-600">#{t.id}</span>
                       <div className="flex gap-1.5">
                         <StatusBadge status={t.status} />
                         <PriorityBadge priority={t.priority} />
                       </div>
                     </div>
-                    <h3 className="font-bold text-white text-base">{t.service?.name}</h3>
-                    <p className="text-xs text-surface-300 line-clamp-3 bg-surface-900/50 p-2.5 rounded-lg">
+                    <h3 className="font-bold text-slate-900 text-sm">{t.service?.name}</h3>
+                    <p className="text-xs text-slate-600 line-clamp-3 bg-slate-50 p-3 rounded-lg border border-slate-200/60 leading-relaxed">
                       {t.description}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-surface-400 pt-1">
-                      <span>📍 {t.location?.name}</span>
-                      <span>👤 {t.citizen?.name}</span>
+                    <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                      <div className="flex items-center gap-1.5 truncate max-w-[180px]">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{t.location?.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Avatar name={t.citizen?.name || 'Citizen'} size="xs" />
+                        <span className="font-semibold text-slate-700">{t.citizen?.name}</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-surface-700/50">
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     {t.status === 'assigned' && (
                       <Button
                         onClick={() => handleUpdateStatus(t.id, 'in_progress')}
                         disabled={updating}
-                        className="w-full text-xs py-2 bg-orange-600 hover:bg-orange-500"
+                        className="w-full text-xs py-2 bg-orange-600 hover:bg-orange-700 text-white"
                       >
-                        ⚡ Start Work (In Progress)
+                        <Zap className="w-3.5 h-3.5" /> Start Work (In Progress)
                       </Button>
                     )}
 
                     {t.status === 'in_progress' && (
                       <Button
                         onClick={() => setActiveTask(t)}
-                        className="w-full text-xs py-2 bg-emerald-600 hover:bg-emerald-500"
+                        className="w-full text-xs py-2 bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
-                        ✓ Mark Completed
+                        <Check className="w-3.5 h-3.5" /> Mark Completed
                       </Button>
                     )}
                   </div>
@@ -144,16 +154,16 @@ export default function OfficerDashboard() {
         {/* Resolved / Completed Tasks section */}
         {completedTasks.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Recently Completed Tasks</h2>
+            <h2 className="text-base font-bold text-slate-900 tracking-tight mb-4">Recently Resolved Tasks</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {completedTasks.map((t) => (
-                <div key={t.id} className="glass-card p-4 space-y-2 opacity-80 hover:opacity-100 transition-opacity">
+                <div key={t.id} className="bg-white border border-slate-200 rounded-xl p-4 space-y-2 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-civic-400">#{t.id}</span>
+                    <span className="text-xs font-mono font-bold text-blue-600">#{t.id}</span>
                     <StatusBadge status={t.status} />
                   </div>
-                  <h4 className="text-sm font-semibold text-white truncate">{t.service?.name}</h4>
-                  <p className="text-xs text-surface-400 line-clamp-2">{t.description}</p>
+                  <h4 className="text-xs font-bold text-slate-900 truncate">{t.service?.name}</h4>
+                  <p className="text-xs text-slate-500 line-clamp-2">{t.description}</p>
                 </div>
               ))}
             </div>
@@ -168,8 +178,8 @@ export default function OfficerDashboard() {
         title={`Complete Task #${activeTask?.id}`}
       >
         {activeTask && (
-          <div className="space-y-4">
-            <p className="text-xs text-surface-300">
+          <div className="space-y-4 text-slate-800">
+            <p className="text-xs text-slate-600">
               Provide work details or notes before resolving <strong>{activeTask.service?.name}</strong>.
             </p>
 
@@ -184,7 +194,7 @@ export default function OfficerDashboard() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
               <Button variant="secondary" onClick={() => setActiveTask(null)}>
                 Cancel
               </Button>

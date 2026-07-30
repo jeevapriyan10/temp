@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import { Landmark, Shield, Building2, User, UserCheck, ArrowRight } from 'lucide-react';
 
 const roleRedirects = {
   super_admin: '/admin',
@@ -31,38 +32,45 @@ export default function Login() {
     }
   };
 
+  const handleDemoClick = (demoEmail) => {
+    setEmail(demoEmail);
+    setPassword('demo1234');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-950 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-civic-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-civic-700/5 rounded-full blur-3xl" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-civic-500/20 to-transparent" />
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 relative overflow-hidden p-4">
+      {/* Background radial gradient glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-600/10 rounded-full blur-2xl" />
       </div>
 
-      <div className="relative w-full max-w-md mx-4 animate-fadeIn">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-civic-500 to-civic-700 flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-xl shadow-civic-500/20">
-            C
+      <div className="relative w-full max-w-md animate-fadeIn">
+        {/* Header Branding */}
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold mx-auto mb-3 shadow-lg shadow-blue-500/30">
+            <Landmark className="w-7 h-7" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">CivicOS</h1>
-          <p className="text-surface-400 mt-2">Civic Operations Platform</p>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">CivicOS</h1>
+          <p className="text-slate-400 text-xs mt-1">Civic Operations & ERP Platform</p>
         </div>
 
         {/* Login Card */}
-        <div className="glass-card p-8">
-          <h2 className="text-xl font-semibold text-white mb-6">Sign in to your account</h2>
+        <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-2xl space-y-5">
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-base font-bold text-slate-900">Sign in to your portal</h2>
+            <p className="text-slate-500 text-xs mt-0.5">Select a demo role below or enter credentials</p>
+          </div>
 
           {error && (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm animate-fadeIn">
+            <div className="px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold animate-fadeIn">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="label-text">Email address</label>
+              <label htmlFor="email" className="label-text">Email Address</label>
               <input
                 id="email"
                 type="email"
@@ -90,41 +98,50 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Signing in...
-                </>
+                <span>Signing in...</span>
               ) : (
-                'Sign in'
+                <>
+                  <span>Sign in to Dashboard</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="mt-6 pt-6 border-t border-surface-700/50">
-            <p className="text-xs text-surface-500 mb-3">Demo accounts (password: demo1234)</p>
+          {/* High-visibility Demo Quick Login Buttons */}
+          <div className="pt-4 border-t border-slate-100 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Quick Demo Login</span>
+              <span className="text-[10px] font-medium text-slate-400">Password: demo1234</span>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Admin', email: 'org_admin@demo.com' },
-                { label: 'Dept Head', email: 'department_head@demo.com' },
-                { label: 'Officer', email: 'officer@demo.com' },
-                { label: 'Citizen', email: 'citizen@demo.com' },
-              ].map((demo) => (
-                <button
-                  key={demo.email}
-                  type="button"
-                  onClick={() => { setEmail(demo.email); setPassword('demo1234'); }}
-                  className="text-xs px-3 py-2 rounded-lg bg-surface-700/50 text-surface-400 hover:text-civic-400 hover:bg-surface-700 transition-colors"
-                >
-                  {demo.label}
-                </button>
-              ))}
+                { label: 'Admin', email: 'org_admin@demo.com', icon: Shield },
+                { label: 'Dept Head', email: 'department_head@demo.com', icon: Building2 },
+                { label: 'Officer', email: 'officer@demo.com', icon: UserCheck },
+                { label: 'Citizen', email: 'citizen@demo.com', icon: User },
+              ].map((demo) => {
+                const IconComp = demo.icon;
+                const isSelected = email === demo.email;
+                return (
+                  <button
+                    key={demo.email}
+                    type="button"
+                    onClick={() => handleDemoClick(demo.email)}
+                    className={`flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                      isSelected
+                        ? 'bg-blue-50 text-blue-700 border-blue-300 ring-2 ring-blue-500/20'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200'
+                    }`}
+                  >
+                    <IconComp className="w-3.5 h-3.5" />
+                    <span>{demo.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AlertTriangle, CheckCircle2, Bell } from 'lucide-react';
 
 let toastListener = null;
 
@@ -28,15 +29,21 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 border animate-fadeIn ${
+          className={`pointer-events-auto px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 border animate-fadeIn ${
             t.type === 'error'
-              ? 'bg-red-950/90 text-red-200 border-red-800'
+              ? 'bg-red-50 text-red-700 border-red-200'
               : t.type === 'success'
-              ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
-              : 'bg-surface-800 text-white border-surface-600'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-white text-slate-800 border-slate-200'
           }`}
         >
-          <span>{t.type === 'error' ? '⚠️' : t.type === 'success' ? '✅' : '🔔'}</span>
+          {t.type === 'error' ? (
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+          ) : t.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          ) : (
+            <Bell className="w-4 h-4 text-blue-600 shrink-0" />
+          )}
           <span>{t.message}</span>
         </div>
       ))}

@@ -3,31 +3,30 @@ import Topbar from '../../components/Topbar';
 import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import Button from '../../components/Button';
+import PriorityBadge from '../../components/PriorityBadge';
 import useOrgStore from '../../store/orgStore';
 import api from '../../lib/api';
+import { Settings, Plus } from 'lucide-react';
 
 const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'name', label: 'Name' },
-  { key: 'description', label: 'Description', render: (v) => v || '—' },
+  { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
+  {
+    key: 'name',
+    label: 'Service Name',
+    render: (val) => (
+      <div className="flex items-center gap-2 font-bold text-slate-900">
+        <Settings className="w-4 h-4 text-blue-600" />
+        <span>{val}</span>
+      </div>
+    ),
+  },
+  { key: 'description', label: 'Description', render: (v) => <span className="text-slate-600">{v || '—'}</span> },
   {
     key: 'default_priority',
-    label: 'Priority',
-    render: (val) => {
-      const colors = {
-        low: 'bg-green-500/10 text-green-400',
-        medium: 'bg-amber-500/10 text-amber-400',
-        high: 'bg-orange-500/10 text-orange-400',
-        critical: 'bg-red-500/10 text-red-400',
-      };
-      return (
-        <span className={`px-2 py-1 rounded-md text-xs font-medium ${colors[val] || colors.medium}`}>
-          {val}
-        </span>
-      );
-    },
+    label: 'Default Priority',
+    render: (val) => <PriorityBadge priority={val} />,
   },
-  { key: 'department_id', label: 'Dept ID' },
+  { key: 'department_id', label: 'Dept ID', render: (val) => <span className="font-mono text-xs text-slate-500">Dept #{val}</span> },
 ];
 
 export default function ServicesPage() {
@@ -63,16 +62,18 @@ export default function ServicesPage() {
 
   return (
     <>
-      <Topbar title="Services" subtitle="Manage department services">
-        <Button onClick={() => setModalOpen(true)}>+ Add Service</Button>
+      <Topbar title="Services" subtitle="Manage catalog of municipal services and default priority rules">
+        <Button onClick={() => setModalOpen(true)}>
+          <Plus className="w-4 h-4" /> Add Service
+        </Button>
       </Topbar>
 
-      <div className="p-8">
+      <div className="p-6">
         <DataTable columns={columns} data={services} />
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add Service">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add New Service">
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
           <div>
             <label className="label-text">Department *</label>
             <select className="select-field" value={form.department_id} onChange={updateField('department_id')} required>
@@ -83,15 +84,15 @@ export default function ServicesPage() {
             </select>
           </div>
           <div>
-            <label className="label-text">Name *</label>
-            <input className="input-field" value={form.name} onChange={updateField('name')} required />
+            <label className="label-text">Service Name *</label>
+            <input className="input-field" value={form.name} onChange={updateField('name')} required placeholder="e.g. Water Leak Repair" />
           </div>
           <div>
             <label className="label-text">Description</label>
-            <textarea className="input-field min-h-[80px] resize-none" value={form.description} onChange={updateField('description')} />
+            <textarea className="input-field min-h-[80px] resize-none" value={form.description} onChange={updateField('description')} placeholder="Detailed service scope..." />
           </div>
           <div>
-            <label className="label-text">Priority</label>
+            <label className="label-text">Default Priority</label>
             <select className="select-field" value={form.default_priority} onChange={updateField('default_priority')}>
               <option value="low">Low</option>
               <option value="medium">Medium</option>

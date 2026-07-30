@@ -11,12 +11,14 @@
     box-sizing: border-box;
   }
 
-  body {
+  html, body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: #0f172a;
-    color: #e2e8f0;
+    background-color: #f8fafc;
+    color: #0f172a;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   ::-webkit-scrollbar {
@@ -25,101 +27,101 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #1e293b;
+    background: #f1f5f9;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #cbd5e1;
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: #94a3b8;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-surface-800/50 backdrop-blur-xl border border-surface-700/50 rounded-xl;
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:border-civic-500/30 hover:shadow-lg hover:shadow-civic-500/5;
+    @apply glass-card transition-all duration-200 hover:border-slate-300 hover:shadow-md;
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-civic-600 to-civic-500 text-white px-5 py-2.5 rounded-lg font-medium 
-           transition-all duration-200 hover:from-civic-500 hover:to-civic-400 hover:shadow-lg hover:shadow-civic-500/25 
-           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm
+           transition-all duration-150 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed
+           flex items-center justify-center gap-2;
   }
 
   .btn-secondary {
-    @apply bg-surface-700 text-surface-200 px-5 py-2.5 rounded-lg font-medium border border-surface-600
-           transition-all duration-200 hover:bg-surface-600 hover:border-surface-500 active:scale-[0.98];
+    @apply bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-lg font-medium text-sm border border-slate-200
+           transition-all duration-150 shadow-sm active:scale-[0.98] flex items-center justify-center gap-2;
   }
 
   .btn-danger {
-    @apply bg-red-600/80 text-white px-5 py-2.5 rounded-lg font-medium
-           transition-all duration-200 hover:bg-red-500 active:scale-[0.98];
+    @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold text-sm
+           transition-all duration-150 shadow-sm active:scale-[0.98] flex items-center justify-center gap-2;
   }
 
   .input-field {
-    @apply w-full bg-surface-900/50 border border-surface-600 rounded-lg px-4 py-2.5 text-surface-100
-           placeholder:text-surface-500 focus:outline-none focus:border-civic-500 focus:ring-1 focus:ring-civic-500/30
-           transition-all duration-200;
+    @apply w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-slate-900 text-sm
+           placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+           transition-all duration-150;
   }
 
   .select-field {
-    @apply w-full bg-surface-900/50 border border-surface-600 rounded-lg px-4 py-2.5 text-surface-100
-           focus:outline-none focus:border-civic-500 focus:ring-1 focus:ring-civic-500/30
-           transition-all duration-200 appearance-none cursor-pointer;
+    @apply w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-slate-900 text-sm
+           focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+           transition-all duration-150 appearance-none cursor-pointer;
   }
 
   .label-text {
-    @apply block text-sm font-medium text-surface-300 mb-1.5;
+    @apply block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider;
   }
 
   .page-title {
-    @apply text-2xl font-bold text-white tracking-tight;
+    @apply text-xl font-bold text-slate-900 tracking-tight;
   }
 
   .page-subtitle {
-    @apply text-surface-400 text-sm mt-1;
+    @apply text-slate-500 text-xs mt-0.5;
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-surface-400 font-medium text-sm
-           transition-all duration-200 hover:bg-surface-800 hover:text-surface-100;
+    @apply flex items-center gap-3 px-3.5 py-2 rounded-lg text-slate-600 font-medium text-xs
+           transition-all duration-150 hover:bg-slate-100 hover:text-slate-900;
   }
 
   .sidebar-link-active {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm
-           bg-civic-600/10 text-civic-400 border-l-2 border-civic-500;
+    @apply flex items-center gap-3 px-3.5 py-2 rounded-r-lg rounded-l-none font-semibold text-xs
+           bg-blue-50 text-blue-600 border-l-4 border-blue-600;
   }
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-12px); }
+  from { opacity: 0; transform: translateX(-10px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out;
 }
 
 .animate-slideIn {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.25s ease-out;
 }
 
 .animate-scaleIn {

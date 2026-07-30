@@ -1,83 +1,134 @@
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import Avatar from './Avatar';
+import {
+  LayoutDashboard,
+  ClipboardList,
+  BarChart3,
+  Building2,
+  Settings,
+  Users,
+  Shield,
+  MapPin,
+  Package,
+  CheckSquare,
+  Home,
+  FilePlus,
+  Search,
+  LogOut,
+  Landmark,
+} from 'lucide-react';
 
-const sidebarConfig = {
+const groupedSidebarConfig = {
   admin: [
-    { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Complaints', path: '/admin/complaints', icon: '📋' },
-    { label: 'Analytics', path: '/admin/analytics', icon: '📈' },
-    { label: 'Departments', path: '/admin/departments', icon: '🏛️' },
-    { label: 'Services', path: '/admin/services', icon: '⚙️' },
-    { label: 'Users', path: '/admin/users', icon: '👥' },
-    { label: 'Roles', path: '/admin/roles', icon: '🛡️' },
-    { label: 'Locations', path: '/admin/locations', icon: '📍' },
+    {
+      section: 'Operations',
+      items: [
+        { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+        { label: 'Complaints', path: '/admin/complaints', icon: ClipboardList },
+      ],
+    },
+    {
+      section: 'Insights',
+      items: [{ label: 'Analytics', path: '/admin/analytics', icon: BarChart3 }],
+    },
+    {
+      section: 'Configuration',
+      items: [
+        { label: 'Departments', path: '/admin/departments', icon: Building2 },
+        { label: 'Services', path: '/admin/services', icon: Settings },
+        { label: 'Users', path: '/admin/users', icon: Users },
+        { label: 'Roles', path: '/admin/roles', icon: Shield },
+        { label: 'Locations', path: '/admin/locations', icon: MapPin },
+      ],
+    },
   ],
   department: [
-    { label: 'Dashboard', path: '/department', icon: '📊' },
-    { label: 'Inventory', path: '/department/inventory', icon: '📦' },
+    {
+      section: 'Operations',
+      items: [
+        { label: 'Dashboard', path: '/department', icon: LayoutDashboard },
+        { label: 'Inventory', path: '/department/inventory', icon: Package },
+      ],
+    },
   ],
   officer: [
-    { label: 'Today\'s Tasks', path: '/officer', icon: '📋' },
+    {
+      section: 'Field Tasks',
+      items: [{ label: "Today's Tasks", path: '/officer', icon: CheckSquare }],
+    },
   ],
   citizen: [
-    { label: 'Home', path: '/citizen', icon: '🏠' },
-    { label: 'Report Issue', path: '/citizen/report', icon: '📝' },
-    { label: 'Track Issues', path: '/citizen/track', icon: '🔍' },
+    {
+      section: 'Citizen Hub',
+      items: [
+        { label: 'Home', path: '/citizen', icon: Home },
+        { label: 'Report Issue', path: '/citizen/report', icon: FilePlus },
+        { label: 'Track Issues', path: '/citizen/track', icon: Search },
+      ],
+    },
   ],
 };
 
 export default function Sidebar({ portal = 'admin' }) {
   const { user, logout } = useAuthStore();
-  const links = sidebarConfig[portal] || sidebarConfig.admin;
+  const sections = groupedSidebarConfig[portal] || groupedSidebarConfig.admin;
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-surface-900/95 backdrop-blur-xl border-r border-surface-700/50 flex flex-col z-40">
-      {/* Logo */}
-      <div className="p-6 border-b border-surface-700/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-civic-500 to-civic-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-civic-500/20">
-            C
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">CivicOS</h1>
-            <p className="text-xs text-surface-500 capitalize">{portal} Portal</p>
-          </div>
+    <aside className="fixed left-0 top-0 h-screen w-60 bg-white border-r border-slate-200 flex flex-col z-40 shadow-xs">
+      {/* Brand Header */}
+      <div className="p-4 border-b border-slate-100 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          <Landmark className="w-4 h-4" />
+        </div>
+        <div>
+          <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none">CivicOS</h1>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">{portal} Portal</p>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {links.map((link) => (
-          <NavLink
-            key={link.path}
-            to={link.path}
-            end={link.path === `/${portal}`}
-            className={({ isActive }) =>
-              isActive ? 'sidebar-link-active' : 'sidebar-link'
-            }
-          >
-            <span className="text-lg">{link.icon}</span>
-            <span>{link.label}</span>
-          </NavLink>
+      {/* Navigation Sections */}
+      <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
+        {sections.map((sec, idx) => (
+          <div key={idx}>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1.5">
+              {sec.section}
+            </div>
+            <div className="space-y-0.5">
+              {sec.items.map((link) => {
+                const IconComponent = link.icon;
+                return (
+                  <NavLink
+                    key={link.path}
+                    to={link.path}
+                    end={link.path === `/${portal}`}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'flex items-center gap-2.5 px-3 py-2 rounded-lg font-semibold text-xs bg-blue-50 text-blue-600 border-l-4 border-blue-600 transition-all'
+                        : 'flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 font-medium text-xs hover:bg-slate-100 hover:text-slate-900 transition-all'
+                    }
+                  >
+                    <IconComponent className="w-4 h-4 shrink-0" />
+                    <span>{link.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
         ))}
       </nav>
 
-      {/* User section */}
-      <div className="p-4 border-t border-surface-700/50">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-lg bg-surface-700 flex items-center justify-center text-surface-300 text-sm font-semibold">
-            {user?.name?.charAt(0) || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-surface-200 truncate">{user?.name}</p>
-            <p className="text-xs text-surface-500 truncate">{user?.role?.name?.replace('_', ' ')}</p>
-          </div>
-        </div>
+      {/* Sign Out Footer */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/50">
         <button
-          onClick={() => { logout(); window.location.href = '/login'; }}
-          className="w-full text-left px-3 py-2 rounded-lg text-sm text-surface-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          onClick={() => {
+            logout();
+            window.location.href = '/login';
+          }}
+          className="w-full px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all flex items-center justify-between border border-slate-200/80 bg-white shadow-2xs"
         >
-          Sign out
+          <span>Sign out</span>
+          <LogOut className="w-3.5 h-3.5" />
         </button>
       </div>
     </aside>

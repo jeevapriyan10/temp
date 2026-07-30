@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '../lib/api';
+import { Bell, CheckCheck } from 'lucide-react';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -57,34 +58,34 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-xl bg-surface-800 border border-surface-700/50 hover:bg-surface-700 text-surface-300 hover:text-white transition-colors"
+        className="relative p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
         title="Notifications"
       >
-        <span className="text-xl">🔔</span>
+        <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-civic-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface-800 border border-surface-700/60 rounded-2xl shadow-2xl z-50 overflow-hidden animate-scaleIn">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-surface-700/50 bg-surface-900/50">
-            <h3 className="text-sm font-semibold text-white">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-scaleIn">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+            <h3 className="text-xs font-bold text-slate-800">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-civic-400 hover:underline"
+                className="text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-1"
               >
-                Mark all read
+                <CheckCheck className="w-3.5 h-3.5" /> Mark all read
               </button>
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto divide-y divide-surface-700/30">
+          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center text-surface-400 text-sm">
+              <div className="p-6 text-center text-slate-400 text-xs font-medium">
                 No notifications
               </div>
             ) : (
@@ -92,19 +93,19 @@ export default function NotificationBell() {
                 <div
                   key={n.id}
                   onClick={() => !n.is_read && markAsRead(n.id)}
-                  className={`p-4 transition-colors cursor-pointer ${
+                  className={`p-3.5 transition-colors cursor-pointer ${
                     n.is_read
-                      ? 'bg-transparent opacity-60 hover:opacity-100'
-                      : 'bg-civic-500/5 hover:bg-civic-500/10 border-l-2 border-civic-500'
+                      ? 'bg-white opacity-60 hover:opacity-100'
+                      : 'bg-blue-50/50 hover:bg-blue-50 border-l-2 border-blue-600'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-semibold text-white">{n.title}</p>
-                    <span className="text-[10px] text-surface-500 whitespace-nowrap">
+                    <p className="text-xs font-bold text-slate-900">{n.title}</p>
+                    <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
                       {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="text-xs text-surface-300 mt-1 line-clamp-2">{n.message}</p>
+                  <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
                 </div>
               ))
             )}

@@ -5,6 +5,7 @@ import Modal from '../../components/Modal';
 import Button from '../../components/Button';
 import useAuthStore from '../../store/authStore';
 import api from '../../lib/api';
+import { Package, Plus, Edit2, Trash2 } from 'lucide-react';
 
 export default function InventoryPage() {
   const { user } = useAuthStore();
@@ -75,18 +76,27 @@ export default function InventoryPage() {
   };
 
   const columns = [
-    { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-civic-400">#{val}</span> },
-    { key: 'name', label: 'Item Name', render: (val) => <span className="font-semibold text-white">{val}</span> },
+    { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
+    {
+      key: 'name',
+      label: 'Item Name',
+      render: (val) => (
+        <div className="flex items-center gap-2 font-bold text-slate-900">
+          <Package className="w-4 h-4 text-blue-600" />
+          <span>{val}</span>
+        </div>
+      ),
+    },
     {
       key: 'quantity',
       label: 'Stock Quantity',
       render: (val, row) => (
-        <span className={`font-bold ${val < 10 ? 'text-red-400' : 'text-emerald-400'}`}>
+        <span className={`font-bold ${val < 10 ? 'text-red-600' : 'text-emerald-700'}`}>
           {val} {row.unit}
         </span>
       ),
     },
-    { key: 'unit', label: 'Unit Type', render: (val) => <span className="text-surface-400 uppercase text-xs font-mono">{val}</span> },
+    { key: 'unit', label: 'Unit Type', render: (val) => <span className="text-slate-500 uppercase text-[11px] font-mono">{val}</span> },
     {
       key: 'actions',
       label: 'Actions',
@@ -100,7 +110,7 @@ export default function InventoryPage() {
             }}
             className="text-xs py-1 px-2.5"
           >
-            Edit
+            <Edit2 className="w-3 h-3" /> Edit
           </Button>
           <Button
             variant="danger"
@@ -110,7 +120,7 @@ export default function InventoryPage() {
             }}
             className="text-xs py-1 px-2.5"
           >
-            Delete
+            <Trash2 className="w-3 h-3" /> Delete
           </Button>
         </div>
       ),
@@ -119,11 +129,13 @@ export default function InventoryPage() {
 
   return (
     <>
-      <Topbar title="Department Inventory" subtitle="Manage operational stock & equipment">
-        <Button onClick={handleOpenAdd}>+ Add Stock Item</Button>
+      <Topbar title="Department Inventory" subtitle="Manage operational stock & equipment supplies">
+        <Button onClick={handleOpenAdd}>
+          <Plus className="w-4 h-4" /> Add Stock Item
+        </Button>
       </Topbar>
 
-      <div className="p-8 space-y-6">
+      <div className="p-6">
         <DataTable columns={columns} data={items} />
       </div>
 
@@ -132,7 +144,7 @@ export default function InventoryPage() {
         onClose={() => setModalOpen(false)}
         title={editingItem ? 'Edit Inventory Item' : 'Add Inventory Item'}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-slate-800">
           <div>
             <label className="label-text">Item Name *</label>
             <input
@@ -168,7 +180,7 @@ export default function InventoryPage() {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-surface-700/50">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <Button variant="secondary" type="button" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
