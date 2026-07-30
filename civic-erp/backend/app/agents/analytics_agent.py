@@ -1,10 +1,8 @@
 """AI Analytics Insights Agent — summarizes real SQL stats into plain-English insights."""
 
-import os
-import json
 import logging
-import urllib.request
 from typing import Dict, Any, List
+from app.agents.gemini_client import generate, clean_json_response, GeminiClientError
 
 logger = logging.getLogger("civicos.agents.analytics")
 
@@ -17,43 +15,27 @@ def generate_insights(summary_data: Dict[str, Any]) -> List[str]:
     dept_counts = summary_data.get("department_counts", [])
     avg_res_time = summary_data.get("avg_resolution_time_minutes", 0)
 
-    api_key = os.getenv("AI_API_KEY") or os.getenv("OPENAI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    system_prompt = (
+        "You are an executive civic analytics AI agent. Given operational complaint metrics, "
+        "respond ONLY with strict JSON: {\"insights\": [\"bullet 1\", \"bullet 2\", \"bullet 3\", \"bullet 4\"]} "
+        "containing 3-4 executive, data-grounded insights."
+    )
+    user_prompt = f"Metrics Data: {summary_data}"
 
-    if api_key:
-        try:
-            payload = {
-                "model": os.getenv("AI_MODEL", "gpt-3.5-turbo"),
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are an executive civic analytics AI agent. Given operational complaint metrics, return a JSON object: {\"insights\": [string, string, string, string]} containing 3-4 executive, data-grounded insights.",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Metrics Data: {json.dumps(summary_data)}",
-                    },
-                ],
-                "response_format": {"type": "json_object"},
-                "temperature": 0.2,
-            }
-            req = urllib.request.Request(
-                os.getenv("AI_API_ENDPOINT", "https://api.openai.com/v1/chat/completions"),
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_key}",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=5) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                content = json.loads(res_data["choices"][0]["message"]["content"])
-                return content.get("insights", [])
-        except Exception as e:
-            logger.warning(f"LLM API call failed ({e}). Falling back to rule-based insights generator.")
+    try:
+        raw_resp = generate(user_prompt, system=system_prompt)
+        content = clean_json_response(raw_resp)
+        insights = content.get("insights", [])
+        if isinstance(insights, list) and len(insights) >= 2:
+            print("[analytics_agent] GEMINI")
+            logger.info("[analytics_agent] GEMINI: Generated fluent executive insights.")
+            return insights
+    except Exception as e:
+        logger.warning(f"[analytics_agent] Gemini call failed ({e}). Falling back to rule-based insights generator.")
 
-    # Rule-based fallback generating data-grounded text
-    print("[AI AGENT WARNING]: AI_API_KEY not configured or unreachable. Executing data-grounded Analytics Agent.")
+    # Rule-based fallback generating data-grounded text (kept intact)
+    print("[analytics_agent] FALLBACK")
+    logger.info("[analytics_agent] FALLBACK: Executing data-grounded Analytics Agent.")
     insights = []
 
     # Insight 1: Total & Active Load

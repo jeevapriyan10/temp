@@ -1,10 +1,7 @@
-"""AI Priority Agent — classifies complaint severity with LLM API or rule-based fallback."""
+"""AI Priority Agent — classifies complaint severity with Gemini LLM or rule-based fallback."""
 
-import os
-import json
 import logging
-import urllib.request
-import urllib.error
+from app.agents.gemini_client import generate, clean_json_response, GeminiClientError
 
 logger = logging.getLogger("civicos.agents.priority")
 
@@ -13,47 +10,35 @@ HIGH_KEYWORDS = ["pothole", "burst", "water leak", "pipeline leak", "missed pick
 MEDIUM_KEYWORDS = ["resurfacing", "low pressure", "connection", "toilet", "equipment repair", "street light", "damaged"]
 LOW_KEYWORDS = ["tree trimming", "footpath", "park", "aesthetic", "cleanliness", "painting"]
 
+ALLOWED_PRIORITIES = {"low", "medium", "high", "critical"}
+
 
 def analyze_priority(description: str, service_name: str = "") -> tuple[str, str]:
     """Given description and service name, return (priority, reasoning)."""
-    api_key = os.getenv("AI_API_KEY") or os.getenv("OPENAI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    system_prompt = (
+        "You are a civic operations AI triage agent. Analyze the civic issue description and "
+        "respond ONLY with strict JSON: {\"priority\": \"low\"|\"medium\"|\"high\"|\"critical\", \"reasoning\": \"one sentence\"}"
+    )
+    user_prompt = f"Service: {service_name}\nDescription: {description}"
 
-    if api_key:
-        try:
-            # LLM API Call (OpenAI compatible endpoint)
-            payload = {
-                "model": os.getenv("AI_MODEL", "gpt-3.5-turbo"),
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are a civic operations AI triage agent. Analyze the civic issue description and return a JSON object: {\"priority\": \"low\"|\"medium\"|\"high\"|\"critical\", \"reasoning\": \"short 1-sentence reason\"}",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Service: {service_name}\nDescription: {description}",
-                    },
-                ],
-                "response_format": {"type": "json_object"},
-                "temperature": 0.1,
-            }
-            req = urllib.request.Request(
-                os.getenv("AI_API_ENDPOINT", "https://api.openai.com/v1/chat/completions"),
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_key}",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=5) as response:
-                res_data = json.loads(response.read().decode("utf-8"))
-                content = json.loads(res_data["choices"][0]["message"]["content"])
-                return content.get("priority", "medium").lower(), content.get("reasoning", "LLM classified priority.")
-        except Exception as e:
-            logger.warning(f"LLM API call failed ({e}). Falling back to rule-based classification.")
+    try:
+        raw_resp = generate(user_prompt, system=system_prompt)
+        content = clean_json_response(raw_resp)
+        priority = str(content.get("priority", "")).lower().strip()
+        reasoning = str(content.get("reasoning", "Gemini classified priority.")).strip()
 
-    # Rule-based fallback
-    print("[AI AGENT WARNING]: AI_API_KEY not configured or unreachable. Executing rule-based Priority Agent.")
+        if priority in ALLOWED_PRIORITIES:
+            print("[priority_agent] GEMINI")
+            logger.info("[priority_agent] GEMINI")
+            return priority, reasoning
+        else:
+            logger.warning(f"[priority_agent] Invalid priority value from Gemini: '{priority}'. Falling back.")
+    except Exception as e:
+        logger.warning(f"[priority_agent] Gemini call failed ({e}). Falling back to rule-based classification.")
+
+    # Rule-based fallback (kept intact)
+    print("[priority_agent] FALLBACK")
+    logger.info("[priority_agent] FALLBACK: Executing rule-based Priority Agent.")
     combined_text = f"{service_name} {description}".lower()
 
     if any(k in combined_text for k in CRITICAL_KEYWORDS):
