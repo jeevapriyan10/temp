@@ -146,4 +146,19 @@ async def transition_complaint(
 
     await db.flush()
     await db.refresh(complaint)
+
+    # Broadcast real-time WebSocket event
+    from app.core.websocket_manager import ws_manager
+    await ws_manager.broadcast_event(
+        org_id=complaint.org_id,
+        event_type=event_type,
+        data={
+            "complaint_id": complaint.id,
+            "status": complaint.status,
+            "department_id": complaint.assigned_department_id,
+            "officer_id": complaint.assigned_officer_id,
+            "updated_by": user.name,
+        },
+    )
+
     return complaint

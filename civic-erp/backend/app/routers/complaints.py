@@ -22,31 +22,46 @@ from app.services.complaint_service import transition_complaint, trigger_notific
 router = APIRouter(prefix="/complaints", tags=["complaints"])
 
 
+from app.agents.orchestrator import process_new_complaint_pipeline
+
+
 @router.post("/", response_model=ComplaintOut, status_code=201)
 async def create_complaint(
     body: ComplaintCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Fetch service to determine department
+    # Fetch service to verify service exists
     svc_result = await db.execute(select(Service).where(Service.id == body.service_id))
     svc = svc_result.scalar_one_or_none()
     if not svc:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    # Determine location: body location > user working area > top location
+    # Determine location
     location_id = body.location_id or current_user.working_area_location_id or 1
+
+    # Run AI Orchestrator Pipeline (Priority Agent -> Routing Agent -> Duplicate Agent)
+    ai_results = await process_new_complaint_pipeline(
+        db=db,
+        org_id=current_user.org_id,
+        service_id=body.service_id,
+        location_id=location_id,
+        description=body.description,
+        provided_priority=body.priority,
+    )
 
     complaint = Complaint(
         org_id=current_user.org_id,
         service_id=body.service_id,
         citizen_user_id=current_user.id,
         location_id=location_id,
-        assigned_department_id=svc.department_id,
+        assigned_department_id=ai_results["assigned_department_id"],
         description=body.description,
         photo_url=body.photo_url,
-        priority=body.priority or svc.default_priority or "medium",
+        priority=ai_results["priority"],
         status="reported",
+        is_duplicate=ai_results["is_duplicate"],
+        parent_complaint_id=ai_results["parent_complaint_id"],
     )
     db.add(complaint)
     await db.flush()
@@ -82,6 +97,19 @@ async def create_complaint(
         created_complaint,
         "complaint_created",
         f"New complaint #{created_complaint.id} ({svc.name}) has been logged.",
+    )
+
+    # Broadcast real-time WebSocket event
+    from app.core.websocket_manager import ws_manager
+    await ws_manager.broadcast_event(
+        org_id=created_complaint.org_id,
+        event_type="complaint_created",
+        data={
+            "complaint_id": created_complaint.id,
+            "status": created_complaint.status,
+            "department_id": created_complaint.assigned_department_id,
+            "priority": created_complaint.priority,
+        },
     )
 
     return created_complaint

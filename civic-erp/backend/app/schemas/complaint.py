@@ -51,6 +51,8 @@ class ComplaintOut(BaseModel):
     photo_url: Optional[str] = None
     priority: str
     status: str
+    is_duplicate: bool = False
+    parent_complaint_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 

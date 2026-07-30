@@ -21,6 +21,8 @@ class Complaint(Base):
     photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     priority: Mapped[str] = mapped_column(String(20), nullable=False, default="medium")  # low, medium, high, critical
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="reported")  # reported, verified, assigned, in_progress, completed, citizen_verified, closed
+    is_duplicate: Mapped[bool] = mapped_column(Integer, nullable=False, default=0)
+    parent_complaint_id: Mapped[int | None] = mapped_column(ForeignKey("complaints.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

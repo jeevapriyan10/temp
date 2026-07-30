@@ -17,6 +17,8 @@ from app.routers import (
     notifications,
     inventory,
     analytics,
+    ai,
+    websocket,
 )
 
 
@@ -35,8 +37,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="CivicOS API",
-    version="0.2.0",
-    description="Configurable Civic Operations ERP — Operations & Complaints Layer",
+    version="0.3.0",
+    description="Configurable Civic Operations ERP — AI Agents & Realtime Layer",
     lifespan=lifespan,
 )
 
@@ -62,6 +64,8 @@ app.include_router(complaints.router)
 app.include_router(notifications.router)
 app.include_router(inventory.router)
 app.include_router(analytics.router)
+app.include_router(ai.router)
+app.include_router(websocket.router)
 
 
 @app.get("/health")

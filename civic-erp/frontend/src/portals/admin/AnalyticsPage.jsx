@@ -24,15 +24,18 @@ const COLORS = ['#3B82F6', '#8B5CF6', '#F59E0B', '#F97316', '#10B981', '#14B8A6'
 export default function AnalyticsPage() {
   const { user } = useAuthStore();
   const [analytics, setAnalytics] = useState(null);
+  const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchAnalytics = async () => {
     if (user?.org_id) {
       try {
-        const { data } = await api.get('/analytics/summary', {
-          params: { org_id: user.org_id },
-        });
-        setAnalytics(data);
+        const [anaRes, aiRes] = await Promise.all([
+          api.get('/analytics/summary', { params: { org_id: user.org_id } }),
+          api.get('/ai/insights', { params: { org_id: user.org_id } }),
+        ]);
+        setAnalytics(anaRes.data);
+        setInsights(aiRes.data.insights || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -75,6 +78,27 @@ export default function AnalyticsPage() {
       <Topbar title="Operations Analytics" subtitle="Real-time KPI metrics & visualization" />
 
       <div className="p-8 space-y-8">
+        {/* AI Executive Insights Card */}
+        {insights.length > 0 && (
+          <div className="glass-card p-6 border-l-4 border-civic-500 bg-gradient-to-r from-civic-500/10 via-purple-500/5 to-transparent animate-fadeIn">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">✨</span>
+              <h3 className="text-base font-bold text-white">AI Executive Operations Summary</h3>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-civic-500/20 text-civic-300 border border-civic-500/30">
+                Realtime Data-Grounded
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {insights.map((text, idx) => (
+                <div key={idx} className="flex items-start gap-2.5 bg-surface-900/40 p-3 rounded-xl border border-surface-700/40">
+                  <span className="text-civic-400 font-bold text-xs mt-0.5">#{idx + 1}</span>
+                  <p className="text-xs text-surface-200 leading-relaxed">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <Card
