@@ -195,8 +195,61 @@ async def seed():
                 )
             )
 
+        # ── Notification Rules ─────────────────────────────
+        from app.models.notification import NotificationRule
+        from app.models.inventory import InventoryItem
+
+        rules_defs = [
+            ("complaint_created", "department_head", "New complaint logged in your department"),
+            ("complaint_assigned", "officer", "You have been assigned a new complaint"),
+            ("status_changed", "citizen", "Your complaint status has been updated"),
+            ("escalated", "org_admin", "High priority complaint requires attention"),
+        ]
+        for event, rname, template in rules_defs:
+            session.add(NotificationRule(
+                org_id=org.id,
+                trigger_event=event,
+                notify_role=rname,
+                template_text=template,
+            ))
+
+        # ── Inventory Items ────────────────────────────────
+        inv_map = {
+            "Road & Infrastructure": [
+                ("Asphalt Cold Mix", 150, "bags"),
+                ("Traffic Cones", 50, "units"),
+                ("Pothole Compactor", 4, "units"),
+            ],
+            "Water Supply": [
+                ("PVC Pipes 4-inch", 200, "meters"),
+                ("Gate Valves 2-inch", 45, "units"),
+                ("Leak Repair Clamps", 100, "units"),
+            ],
+            "Electricity": [
+                ("LED Streetlight Heads 100W", 60, "units"),
+                ("Insulated Safety Gloves", 25, "pairs"),
+                ("Copper Armored Cable", 300, "meters"),
+            ],
+            "Garbage & Sanitation": [
+                ("Wheelie Dustbins 240L", 80, "units"),
+                ("Sanitation Sprayers", 15, "units"),
+                ("Disinfectant Chemical", 500, "liters"),
+            ],
+        }
+
+        for dept_name, items in inv_map.items():
+            if dept_name in departments:
+                dept_obj = departments[dept_name]
+                for iname, qty, uunit in items:
+                    session.add(InventoryItem(
+                        department_id=dept_obj.id,
+                        name=iname,
+                        quantity=qty,
+                        unit=uunit,
+                    ))
+
         await session.commit()
-        print("[OK] Seed complete - 1 org, 3 locations, 5 departments, 17 services, 9 roles, 9 users")
+        print("[OK] Seed complete - 1 org, 3 locations, 5 departments, 17 services, 9 roles, 9 users, notification rules & inventory items")
 
 
 if __name__ == "__main__":

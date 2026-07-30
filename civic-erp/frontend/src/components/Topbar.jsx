@@ -1,3 +1,5 @@
+import NotificationBell from './NotificationBell';
+
 export default function Topbar({ title, subtitle, children }) {
   return (
     <header className="sticky top-0 z-30 bg-surface-900/80 backdrop-blur-xl border-b border-surface-700/50">
@@ -8,6 +10,7 @@ export default function Topbar({ title, subtitle, children }) {
         </div>
         <div className="flex items-center gap-3">
           {children}
+          <NotificationBell />
         </div>
       </div>
     </header>

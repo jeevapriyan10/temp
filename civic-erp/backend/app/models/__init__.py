@@ -6,6 +6,9 @@ from app.models.department import Department
 from app.models.service import Service
 from app.models.role import Role
 from app.models.user import User
+from app.models.complaint import Complaint, ComplaintHistory
+from app.models.notification import Notification, NotificationRule
+from app.models.inventory import InventoryItem
 
 __all__ = [
     "Organization",
@@ -14,4 +17,9 @@ __all__ = [
     "Service",
     "Role",
     "User",
+    "Complaint",
+    "ComplaintHistory",
+    "Notification",
+    "NotificationRule",
+    "InventoryItem",
 ]

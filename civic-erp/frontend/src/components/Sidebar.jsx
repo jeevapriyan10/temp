@@ -4,6 +4,8 @@ import useAuthStore from '../store/authStore';
 const sidebarConfig = {
   admin: [
     { label: 'Dashboard', path: '/admin', icon: '📊' },
+    { label: 'Complaints', path: '/admin/complaints', icon: '📋' },
+    { label: 'Analytics', path: '/admin/analytics', icon: '📈' },
     { label: 'Departments', path: '/admin/departments', icon: '🏛️' },
     { label: 'Services', path: '/admin/services', icon: '⚙️' },
     { label: 'Users', path: '/admin/users', icon: '👥' },
@@ -12,12 +14,15 @@ const sidebarConfig = {
   ],
   department: [
     { label: 'Dashboard', path: '/department', icon: '📊' },
+    { label: 'Inventory', path: '/department/inventory', icon: '📦' },
   ],
   officer: [
-    { label: 'Dashboard', path: '/officer', icon: '📊' },
+    { label: 'Today\'s Tasks', path: '/officer', icon: '📋' },
   ],
   citizen: [
     { label: 'Home', path: '/citizen', icon: '🏠' },
+    { label: 'Report Issue', path: '/citizen/report', icon: '📝' },
+    { label: 'Track Issues', path: '/citizen/track', icon: '🔍' },
   ],
 };
 
