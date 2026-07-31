@@ -16,23 +16,42 @@ const roleRedirects = {
 };
 
 export default function Login() {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading, error } = useAuthStore();
+  const [roleId, setRoleId] = useState(4); // Default to Citizen
+
+  const { login, register, loading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await login(email, password);
-      const roleName = data.user?.role?.name || 'citizen';
-      navigate(roleRedirects[roleName] || '/citizen');
+      if (isRegistering) {
+        const data = await register({
+          org_id: 1,
+          name,
+          email,
+          phone: phone || null,
+          password,
+          role_id: Number(roleId),
+        });
+        const roleName = data.user?.role?.name || 'citizen';
+        navigate(roleRedirects[roleName] || '/citizen');
+      } else {
+        const data = await login(email, password);
+        const roleName = data.user?.role?.name || 'citizen';
+        navigate(roleRedirects[roleName] || '/citizen');
+      }
     } catch {
-      // error is set in the store
+      // error is handled in store
     }
   };
 
   const handleDemoClick = (demoEmail) => {
+    setIsRegistering(false);
     setEmail(demoEmail);
     setPassword('demo1234');
   };
@@ -55,11 +74,43 @@ export default function Login() {
           <p className="text-slate-400 text-xs mt-1">Civic Operations & ERP Platform</p>
         </div>
 
-        {/* Login Card */}
+        {/* Auth Card */}
         <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-2xl space-y-5">
-          <div className="border-b border-slate-100 pb-3">
-            <h2 className="text-base font-bold text-slate-900">Sign in to your portal</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Select a demo role below or enter credentials</p>
+          {/* Mode Switcher Tabs */}
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setIsRegistering(false)}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                !isRegistering
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsRegistering(true)}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                isRegistering
+                  ? 'bg-white text-blue-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
+          <div className="border-b border-slate-100 pb-2">
+            <h2 className="text-base font-bold text-slate-900">
+              {isRegistering ? 'Create a New Account' : 'Sign in to your portal'}
+            </h2>
+            <p className="text-slate-500 text-xs mt-0.5">
+              {isRegistering
+                ? 'Register a new user profile with selected portal role'
+                : 'Select a demo role below or enter credentials'}
+            </p>
           </div>
 
           {error && (
@@ -68,7 +119,51 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {isRegistering && (
+              <>
+                <div>
+                  <label htmlFor="name" className="label-text">Full Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    required
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="label-text">Phone Number (Optional)</label>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="roleId" className="label-text">Select Account Role</label>
+                  <select
+                    id="roleId"
+                    value={roleId}
+                    onChange={(e) => setRoleId(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value={4}>Citizen</option>
+                    <option value={3}>Field Officer</option>
+                    <option value={2}>Department Head</option>
+                    <option value={1}>Administrator</option>
+                  </select>
+                </div>
+              </>
+            )}
+
             <div>
               <label htmlFor="email" className="label-text">Email Address</label>
               <input
@@ -76,7 +171,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@demo.com"
+                placeholder={isRegistering ? 'user@example.com' : 'name@demo.com'}
                 required
                 className="input-field"
               />
@@ -98,13 +193,13 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-md transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
-                <span>Signing in...</span>
+                <span>Processing...</span>
               ) : (
                 <>
-                  <span>Sign in to Dashboard</span>
+                  <span>{isRegistering ? 'Create Account & Sign In' : 'Sign in to Dashboard'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -112,7 +207,7 @@ export default function Login() {
           </form>
 
           {/* High-visibility Demo Quick Login Buttons */}
-          <div className="pt-4 border-t border-slate-100 space-y-2.5">
+          <div className="pt-3.5 border-t border-slate-100 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Quick Demo Login</span>
               <span className="text-[10px] font-medium text-slate-400">Password: demo1234</span>
@@ -125,7 +220,7 @@ export default function Login() {
                 { label: 'Citizen', email: 'citizen@demo.com', icon: User },
               ].map((demo) => {
                 const IconComp = demo.icon;
-                const isSelected = email === demo.email;
+                const isSelected = !isRegistering && email === demo.email;
                 return (
                   <button
                     key={demo.email}

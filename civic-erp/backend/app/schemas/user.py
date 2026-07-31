@@ -51,12 +51,12 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    org_id: int
+    org_id: int = 1
     name: str
     email: str
     phone: Optional[str] = None
     password: str
-    role_id: int
+    role_id: int = 4
 
 
 class TokenResponse(BaseModel):

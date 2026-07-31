@@ -32,6 +32,18 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
+  register: async (userData) => {
+    set({ loading: true, error: null });
+    try {
+      await api.post('/auth/register', userData);
+      return await get().login(userData.email, userData.password);
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Account creation failed';
+      set({ loading: false, error: msg });
+      throw new Error(msg);
+    }
+  },
+
   logout: () => {
     localStorage.removeItem('civicos_token');
     localStorage.removeItem('civicos_user');
