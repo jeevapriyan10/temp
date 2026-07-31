@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-to-a-long-random-string"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
-    CORS_ORIGINS: str = "http://localhost:5173"
+    CORS_ORIGINS: str = "*"
 
     model_config = {
         "env_file": str(Path(__file__).resolve().parent.parent.parent / ".env"),

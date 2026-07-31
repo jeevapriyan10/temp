@@ -45,11 +45,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
-origins = [o.strip() for o in settings.CORS_ORIGINS.split(",")]
+# CORS configuration
+raw_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+has_wildcard = "*" in raw_origins or not raw_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[] if has_wildcard else raw_origins,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
