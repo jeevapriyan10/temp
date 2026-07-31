@@ -33,6 +33,19 @@ async def lifespan(app: FastAPI):
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe auto-migration for newly added AI fields on existing SQLite databases
+        from sqlalchemy import text
+        alter_statements = [
+            "ALTER TABLE complaints ADD COLUMN ai_confidence INTEGER",
+            "ALTER TABLE complaints ADD COLUMN needs_manual_review BOOLEAN DEFAULT 0",
+            "ALTER TABLE complaints ADD COLUMN photo_verified BOOLEAN",
+            "ALTER TABLE complaints ADD COLUMN verification_note TEXT",
+        ]
+        for stmt in alter_statements:
+            try:
+                await conn.execute(text(stmt))
+            except Exception:
+                pass  # column already exists or table newly created
     yield
     # shutdown
     await engine.dispose()
