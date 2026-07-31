@@ -20,11 +20,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # --------------- password helpers ---------------
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # Truncate to 72 bytes for bcrypt limit compatibility
+    return pwd_context.hash(password[:72])
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    # Truncate to 72 bytes for bcrypt limit compatibility
+    return pwd_context.verify(plain[:72], hashed)
 
 
 # --------------- JWT helpers ---------------
