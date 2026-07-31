@@ -145,6 +145,11 @@ export default function TrackComplaintsPage() {
                     className="max-h-full object-contain"
                   />
                 </div>
+                {selectedComplaint.photo_verified === false && (
+                  <p className="text-xs text-amber-600 font-medium mt-1">
+                    Photo may not match description
+                  </p>
+                )}
               </div>
             )}
 

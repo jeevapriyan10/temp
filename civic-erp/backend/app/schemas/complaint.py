@@ -53,6 +53,10 @@ class ComplaintOut(BaseModel):
     status: str
     is_duplicate: bool = False
     parent_complaint_id: Optional[int] = None
+    ai_confidence: Optional[int] = None
+    needs_manual_review: bool = False
+    photo_verified: Optional[bool] = None
+    verification_note: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

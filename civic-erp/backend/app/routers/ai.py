@@ -30,6 +30,10 @@ class InsightsResponse(BaseModel):
     insights: list[str]
 
 
+from datetime import datetime, timedelta, timezone
+from sqlalchemy import select, func
+
+
 @router.get("/insights", response_model=InsightsResponse)
 async def get_ai_insights(
     org_id: Optional[int] = Query(None),
@@ -40,7 +44,25 @@ async def get_ai_insights(
     summary = await get_analytics_summary(
         org_id=target_org_id, department_id=None, officer_id=None, db=db, current_user=current_user
     )
-    insights = generate_insights(summary.model_dump())
+
+    # Fetch recurring root cause issues (2+ complaints in same service & location in last 30 days)
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    rec_q = (
+        select(Complaint.service_id, Complaint.location_id, func.count(Complaint.id).label("cnt"))
+        .where(Complaint.org_id == target_org_id, Complaint.created_at >= thirty_days_ago)
+        .group_by(Complaint.service_id, Complaint.location_id)
+        .having(func.count(Complaint.id) >= 2)
+    )
+    rec_res = await db.execute(rec_q)
+    recurring_rows = rec_res.all()
+    recurring_issues = [
+        {"service_id": r.service_id, "location_id": r.location_id, "count": r.cnt}
+        for r in recurring_rows
+    ]
+
+    summary_dict = summary.model_dump()
+    summary_dict["recurring_issues"] = recurring_issues
+    insights = generate_insights(summary_dict)
     return InsightsResponse(insights=insights)
 
 

@@ -40,7 +40,7 @@ async def create_complaint(
     # Determine location
     location_id = body.location_id or current_user.working_area_location_id or 1
 
-    # Run AI Orchestrator Pipeline (Priority Agent -> Routing Agent -> Duplicate Agent)
+    # Run AI Orchestrator Pipeline (Priority Agent -> Routing Agent -> Duplicate Agent -> Verification Agent)
     ai_results = await process_new_complaint_pipeline(
         db=db,
         org_id=current_user.org_id,
@@ -48,6 +48,7 @@ async def create_complaint(
         location_id=location_id,
         description=body.description,
         provided_priority=body.priority,
+        photo_url=body.photo_url,
     )
 
     complaint = Complaint(
@@ -62,6 +63,10 @@ async def create_complaint(
         status="reported",
         is_duplicate=ai_results["is_duplicate"],
         parent_complaint_id=ai_results["parent_complaint_id"],
+        ai_confidence=ai_results.get("ai_confidence"),
+        needs_manual_review=ai_results.get("needs_manual_review", False),
+        photo_verified=ai_results.get("photo_verified"),
+        verification_note=ai_results.get("verification_note"),
     )
     db.add(complaint)
     await db.flush()

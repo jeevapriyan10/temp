@@ -96,12 +96,23 @@ export default function KanbanBoard({ complaints = [], onSelectComplaint, onAssi
                             {c.department.name}
                           </span>
                         )}
+                        {c.needs_manual_review ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200">
+                            Needs Review
+                          </span>
+                        ) : null}
                         {c.is_duplicate ? (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             Duplicate #{c.parent_complaint_id}
                           </span>
                         ) : null}
                       </div>
+
+                      {c.photo_verified === false && (
+                        <p className="text-[11px] font-medium text-amber-600">
+                          Photo may not match description
+                        </p>
+                      )}
 
                       {/* Footer: Citizen & Officer Avatars + Date */}
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

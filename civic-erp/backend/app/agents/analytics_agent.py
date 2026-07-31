@@ -15,10 +15,13 @@ def generate_insights(summary_data: Dict[str, Any]) -> List[str]:
     dept_counts = summary_data.get("department_counts", [])
     avg_res_time = summary_data.get("avg_resolution_time_minutes", 0)
 
+    recurring_issues = summary_data.get("recurring_issues", [])
+
     system_prompt = (
-        "You are an executive civic analytics AI agent. Given operational complaint metrics, "
+        "You are an executive civic analytics AI agent. Given operational complaint metrics and recurring issue data, "
         "respond ONLY with strict JSON: {\"insights\": [\"bullet 1\", \"bullet 2\", \"bullet 3\", \"bullet 4\"]} "
-        "containing 3-4 executive, data-grounded insights."
+        "containing 3-4 executive, data-grounded insights. If recurring issues exist, call them out specifically as root-cause candidates "
+        "rather than isolated incidents (e.g. 'Recurring pattern detected: multiple complaints at same location recommend root-cause inspection over patching')."
     )
     user_prompt = f"Metrics Data: {summary_data}"
 
@@ -44,8 +47,12 @@ def generate_insights(summary_data: Dict[str, Any]) -> List[str]:
         f"Overall complaint volume stands at {total} issues, with {active_load} active tasks currently in operational queue."
     )
 
-    # Insight 2: Top Department
-    if dept_counts:
+    # Insight 2: Root cause / recurring issues or top department
+    if recurring_issues:
+        insights.append(
+            f"Root-Cause Warning: {len(recurring_issues)} location-service pair(s) have registered 2+ complaints in the last 30 days — inspect infrastructure to prevent recurring failures."
+        )
+    elif dept_counts:
         top_dept = max(dept_counts, key=lambda x: x.get("count", 0))
         if top_dept.get("count", 0) > 0:
             insights.append(

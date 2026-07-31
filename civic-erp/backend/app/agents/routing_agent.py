@@ -11,10 +11,10 @@ def route_to_department(
     description: str,
     service_name: str,
     departments: List[Dict[str, Any]],
-) -> int:
-    """Given complaint description & live departments list from DB, returns matching department_id."""
+) -> tuple[int, int]:
+    """Given complaint description & live departments list from DB, returns (matching department_id, confidence)."""
     if not departments:
-        return 1
+        return 1, 50
 
     valid_dept_ids = {d["id"] for d in departments}
     dept_summary = "\n".join(
@@ -24,7 +24,7 @@ def route_to_department(
     system_prompt = (
         "You are a civic routing agent. Match the complaint to the best department ID from this list:\n"
         f"{dept_summary}\n"
-        "Respond ONLY with strict JSON: {\"department_id\": <int>, \"reasoning\": \"one sentence\"}"
+        "Respond ONLY with strict JSON: {\"department_id\": <int>, \"reasoning\": \"one sentence\", \"confidence\": <int 0-100>}"
     )
     user_prompt = f"Service: {service_name}\nDescription: {description}"
 
@@ -32,10 +32,13 @@ def route_to_department(
         raw_resp = generate(user_prompt, system=system_prompt)
         content = clean_json_response(raw_resp)
         dept_id = int(content.get("department_id"))
+        confidence = int(content.get("confidence", 85))
+        confidence = max(0, min(100, confidence))
+
         if dept_id in valid_dept_ids:
             print("[routing_agent] GEMINI")
             logger.info(f"[routing_agent] GEMINI: Routed to department_id={dept_id}")
-            return dept_id
+            return dept_id, confidence
         else:
             logger.warning(f"[routing_agent] Department ID {dept_id} not in live org departments. Falling back.")
     except Exception as e:
@@ -68,4 +71,5 @@ def route_to_department(
             highest_score = score
             best_dept_id = d["id"]
 
-    return best_dept_id
+    fallback_conf = 75 if highest_score > 0 else 60
+    return best_dept_id, fallback_conf

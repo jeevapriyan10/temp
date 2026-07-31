@@ -83,7 +83,20 @@ export default function DepartmentDashboard() {
 
   const columns = [
     { key: 'id', label: 'ID', render: (val) => <span className="font-mono font-bold text-blue-600">#{val}</span> },
-    { key: 'service', label: 'Service', render: (val) => <span className="font-semibold text-slate-900">{val?.name}</span> },
+    {
+      key: 'service',
+      label: 'Service',
+      render: (val, row) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-slate-900">{val?.name}</span>
+          {row.needs_manual_review && (
+            <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 w-max">
+              Needs Review
+            </span>
+          )}
+        </div>
+      ),
+    },
     { key: 'priority', label: 'Priority', render: (val) => <PriorityBadge priority={val} /> },
     { key: 'status', label: 'Status', render: (val) => <StatusBadge status={val} /> },
     {

@@ -226,6 +226,11 @@ export default function ComplaintsPage() {
                 <div className="w-full h-48 rounded-xl overflow-hidden border border-slate-200 bg-slate-900 flex items-center justify-center">
                   <img src={selectedComplaint.photo_url} alt="Evidence" className="max-h-full object-contain" />
                 </div>
+                {selectedComplaint.photo_verified === false && (
+                  <p className="text-xs text-amber-600 font-medium mt-1">
+                    Photo may not match description
+                  </p>
+                )}
               </div>
             )}
 

@@ -39,7 +39,8 @@ def process_chat_message(
             )
 
             system_prompt = (
-                "You are CivicOS Assistant. Wrap the provided real database complaint status facts "
+                "You are CivicOS Assistant. Detect the citizen's input language and respond in that same language, "
+                "defaulting to English if uncertain. Wrap the provided real database complaint status facts "
                 "into a polite, clear, structured citizen update. Do not alter any status details or hallucinate facts."
             )
             try:
@@ -69,6 +70,7 @@ def process_chat_message(
     )
     system_prompt = (
         "You are CivicOS Assistant, a helpful assistant for city citizens. "
+        "Detect the citizen's input language and respond in that same language, defaulting to English if uncertain. "
         "Answer queries conversationally based on our available municipal services:\n"
         f"{context_services}\n"
         "Keep answers polite, concise, and helpful."

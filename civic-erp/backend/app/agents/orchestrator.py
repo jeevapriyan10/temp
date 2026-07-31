@@ -10,6 +10,7 @@ from app.models.complaint import Complaint
 from app.agents.priority_agent import analyze_priority
 from app.agents.routing_agent import route_to_department
 from app.agents.duplicate_agent import detect_duplicate
+from app.agents.verification_agent import verify_photo
 
 
 async def process_new_complaint_pipeline(
@@ -19,10 +20,11 @@ async def process_new_complaint_pipeline(
     location_id: int,
     description: str,
     provided_priority: str | None = None,
+    photo_url: str | None = None,
 ) -> Dict[str, Any]:
-    """Sequentially executes Priority Agent -> Routing Agent -> Duplicate Detection Agent.
+    """Sequentially executes Priority Agent -> Routing Agent -> Duplicate Agent -> Verification Agent.
 
-    Returns dict containing resolved { priority, assigned_department_id, is_duplicate, parent_complaint_id, reasoning }.
+    Returns dict containing resolved { priority, assigned_department_id, is_duplicate, parent_complaint_id, reasoning, ai_confidence, needs_manual_review, photo_verified, verification_note }.
     """
     # Fetch service details
     svc_result = await db.execute(select(Service).where(Service.id == service_id))
@@ -31,7 +33,7 @@ async def process_new_complaint_pipeline(
     default_dept_id = svc.department_id if svc else 1
 
     # 1. Run Priority Agent
-    priority, priority_reason = analyze_priority(description, svc_name)
+    priority, priority_reason, prio_conf = analyze_priority(description, svc_name)
     resolved_priority = provided_priority if provided_priority and provided_priority != "medium" else priority
 
     # 2. Run Routing Agent against live DB departments list
@@ -41,7 +43,7 @@ async def process_new_complaint_pipeline(
         {"id": d.id, "name": d.name, "description": d.description} for d in db_departments
     ]
 
-    routed_department_id = route_to_department(description, svc_name, departments_dict)
+    routed_department_id, route_conf = route_to_department(description, svc_name, departments_dict)
     # Default to service department if routing confidence is baseline
     final_department_id = routed_department_id or default_dept_id
 
@@ -63,12 +65,19 @@ async def process_new_complaint_pipeline(
         for c in open_complaints_db
     ]
 
-    is_duplicate, parent_id = detect_duplicate(
+    is_duplicate, parent_id, dup_conf = detect_duplicate(
         location_id, service_id, description, open_complaints_list
     )
 
+    # Calculate lowest confidence score
+    ai_confidence = min(prio_conf, route_conf, dup_conf)
+    needs_manual_review = ai_confidence < 60
+
+    # 4. Run Verification Agent (optional photo validation)
+    photo_verified, ver_conf, verification_note = verify_photo(photo_url, description)
+
     print(
-        f"[AI ORCHESTRATOR COMPLETED]: Priority={resolved_priority} | Department={final_department_id} | Duplicate={is_duplicate} (Parent #{parent_id})"
+        f"[AI ORCHESTRATOR COMPLETED]: Priority={resolved_priority} | Department={final_department_id} | Duplicate={is_duplicate} | Confidence={ai_confidence}% (Needs Review={needs_manual_review}) | Photo Verified={photo_verified}"
     )
 
     return {
@@ -77,4 +86,8 @@ async def process_new_complaint_pipeline(
         "is_duplicate": is_duplicate,
         "parent_complaint_id": parent_id,
         "reasoning": priority_reason,
+        "ai_confidence": ai_confidence,
+        "needs_manual_review": needs_manual_review,
+        "photo_verified": photo_verified,
+        "verification_note": verification_note,
     }
